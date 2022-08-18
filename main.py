@@ -1,20 +1,28 @@
-import sys
+import csv
 
-clients = [
-    {
-        'name': 'pablo',
-        'company':'prgx',
-        'email':'pablo@prgx.com',
-        'position': 'Analyst 1',
-    },
-    {
-       'name': 'Edwin',
-       'company':'prgx',
-       'email':'edwin@prgx.com',
-       'position': 'Analyst 3',
-    },
-]
+import os
 
+CLIENT_TABLE = 'clients.csv'
+
+CLIENT_SCHEMA = ['name', 'company', 'email', 'position']
+
+clients = []
+
+def _initialize_clients_from_storange():
+    with open(CLIENT_TABLE, mode='r') as f:
+        reader = csv.DictReader(f, fieldnames= CLIENT_SCHEMA)
+
+        for row in reader:
+            clients.append(row)
+
+def _save_clients_to_storage():
+	tmp_table_name = '{}.tmp'.format(CLIENT_TABLE)
+	with open(tmp_table_name, mode='w') as f:
+		writer = csv.DictWriter(f, fieldnames=CLIENT_SCHEMA)
+		writer.writerows(clients)
+
+		os.remove(CLIENT_TABLE)
+	os.rename(tmp_table_name, CLIENT_TABLE)
 
 def create_client(client_name):
     global clients
@@ -90,6 +98,8 @@ def _print_welcome():
 
 
 if __name__ == '__main__':
+    _initialize_clients_from_storange()
+
     _print_welcome()
 
     command = input()
@@ -123,4 +133,6 @@ if __name__ == '__main__':
             print('The client: {} is not in our client\'s list'.format(client_name))
     else:
         print('Invalid command')
+
+    _save_clients_to_storage()
 
